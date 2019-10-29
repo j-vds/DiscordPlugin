@@ -1,0 +1,32 @@
+apply plugin: "java"
+apply plugin: "maven"
+
+version '0.1'
+
+sourceCompatibility = 1.8
+
+repositories{
+    mavenCentral()
+    maven{ url 'https://jitpack.io' }
+}
+
+ext{
+    //the build number that this plugin is made for
+    mindustryVersion = 'v97'
+}
+
+dependencies{
+
+    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
+    compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+    implementation 'org.javacord:javacord:3.0.4'
+}
+
+jar{
+    version = null
+    from{
+        configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
+    }
+}
+
+compileJava.options.encoding = 'UTF-8'
