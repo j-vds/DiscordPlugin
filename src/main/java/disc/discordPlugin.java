@@ -52,17 +52,35 @@ public class discordPlugin extends Plugin{
     @Override
     public void registerClientCommands(CommandHandler handler){
         handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
-            Optional<Channel> dc =  ((Optional<Channel>)this.api.getChannelById(data.get(1)));
-            if (!dc.isPresent()) {
-                System.out.println("[ERR!] discordplugin: channel not found!");
+            TextChannel tc = this.getTextChannel(data.get(1));
+            if (tc == null){
+                player.sendMessage("[scarlet]This command is disabled.");
                 return;
             }
-            Optional<TextChannel> dtc = dc.get().asTextChannel();
-            if (!dtc.isPresent()){
-                System.out.println("[ERR!] discordplugin: textchannel not found!");
-                return;
-            }
-            dtc.get().sendMessage(player.name +": " + args[0]);
+            tc.sendMessage(player.name +": " + args[0]);
         });
+
+        handler.<Player>register("gr", "[name]", "Pings admins if there is a griefer", (args, player)->{
+            TextChannel tc = this.getTextChannel(data.get(1));
+            if (tc == null){
+                player.sendMessage("[scarlet]This command is disabled.");
+                return;
+            }
+
+        });
+    }
+
+    public TextChannel getTextChannel(String id){
+        Optional<Channel> dc =  ((Optional<Channel>)this.api.getChannelById(id));
+        if (!dc.isPresent()) {
+            System.out.println("[ERR!] discordplugin: channel not found!");
+            return null;
+        }
+        Optional<TextChannel> dtc = dc.get().asTextChannel();
+        if (!dtc.isPresent()){
+            System.out.println("[ERR!] discordplugin: textchannel not found!");
+            return null;
+        }
+        return dtc.get();
     }
 }
