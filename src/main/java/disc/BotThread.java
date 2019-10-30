@@ -11,12 +11,6 @@ public class BotThread extends Thread{
     public BotThread(DiscordApi _api, Thread _mt) {
         api = _api; //new DiscordApiBuilder().setToken(data.get(0)).login().join();
         mt = _mt;
-        // Add a listener which answers with "Pong!" if someone writes "!ping"
-        api.addMessageCreateListener(event -> {
-            if (event.getMessageContent().equalsIgnoreCase("!ping")) {
-                event.getChannel().sendMessage("Pong!");
-            }
-        });
 
         //communication commands
         api.addMessageCreateListener(new comCommands());
