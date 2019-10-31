@@ -20,7 +20,7 @@ You can use some basic commands. I will add more in the future.
 * `..maps` maps on the server
 #### In-game
 * `/d <text...>` Send a message to discord.
-* `/gr [player] [reason...]` Alert admins on discord if someone is griefing (probably add cooldown)
+* `/gr [player] [reason...]` Alert admins on discord if someone is griefing (5 minute cooldown)
 
 ### Building the Jar
 
