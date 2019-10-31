@@ -6,6 +6,12 @@ Before you start your server you will need to create a `settings.json` file in t
 You need to follow a specific template. This is an [example](https://github.com/J-VdS/DiscordPlugin/blob/master/settings.json) of how this file should look.
 
 I recommend to enable `Developer Mode` on discord. This is the easiest way to get the `id` values.
+
+### Disable commands
+You are able to disable some in-game commands by leaving some fields in the `settings.json` file blank (`""`).
+ * *Disable /d* : `"channel_id": ""` 
+ * *Disable /gr* : `"role_id": ""`  
+
 ### Basic Usage
 You can use some basic commands. I will add more in the future.
 

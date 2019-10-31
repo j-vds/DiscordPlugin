@@ -27,7 +27,7 @@ import java.util.Optional;
 
 public class discordPlugin extends Plugin{
     final Long CDT = 300L;
-    public JSONObject data; //token, channelid
+    public JSONObject data; //token, channel_id, role_id
     public DiscordApi api;
     private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
 
