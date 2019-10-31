@@ -1,0 +1,5 @@
+{
+"token" : "your token from discord",
+"channel_id": "id of the channel where messages will be posted",
+"role_id": "id of the admin role"
+}
