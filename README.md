@@ -5,7 +5,7 @@ because this plugin is in early dev).
 Before you start your server you will need to create a `settings.json` file in the `config/mods` directory.
 You need to follow a specific template. This is an [example](https://github.com/J-VdS/DiscordPlugin/blob/master/settings.json) of how this file should look.
 
-I recommend to enable `Developer Mode`. This is the easiest way to get the `id` values.
+I recommend to enable `Developer Mode` on discord. This is the easiest way to get the `id` values.
 ### Basic Usage
 You can use some basic commands. I will add more in the future.
 
