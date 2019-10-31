@@ -3,7 +3,6 @@ package disc;
 import io.anuke.arc.Core;
 import io.anuke.arc.util.CommandHandler;
 import io.anuke.arc.util.Strings;
-import io.anuke.arc.util.serialization.Json;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.type.Player;
 import io.anuke.mindustry.gen.Call;
@@ -16,52 +15,35 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
+
+//json
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-//file
-import java.awt.Color;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
-//json
-
-
+import java.awt.*;
 import java.lang.Thread;
 import java.util.HashMap;
 import java.util.Optional;
 
 public class discordPlugin extends Plugin{
     final Long CDT = 300L;
-    public List<String> data; //token, channelid
+    public JSONObject data; //token, channelid
     public DiscordApi api;
     private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
 
     //register event handlers and create variables in the constructor
-    public discordPlugin(){
-        try{
-            Path path = Paths.get(String.valueOf(Core.settings.getDataDirectory().child("mods/token.txt")));
-            data = Files.readAllLines(path, StandardCharsets.UTF_8);
+    public discordPlugin() {
+        try {
+            String pureJson = Core.settings.getDataDirectory().child("mods/settings.json").readString();
+            data = new JSONObject(new JSONTokener(pureJson));
         } catch (Exception e) {
             System.out.println("[ERR!] discordplugin: " + e.toString());
         }
-        api = new DiscordApiBuilder().setToken(data.get(0)).login().join();
+        api = new DiscordApiBuilder().setToken(data.getString("token").trim()).login().join();
         BotThread bt = new BotThread(api, Thread.currentThread());
         bt.setDaemon(false);
         bt.start();
-
-        try{
-            String pureJson = Core.settings.getDataDirectory().child("mods/settings.json").readString();
-            JSONObject data = new JSONObject(new JSONTokener(pureJson));
-
-        } catch (Exception e){
-            e.printStackTrace();
-        }
     }
-
 
     //register commands that run on the server
     @Override
@@ -73,7 +55,7 @@ public class discordPlugin extends Plugin{
     @Override
     public void registerClientCommands(CommandHandler handler){
         handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
-            TextChannel tc = this.getTextChannel(data.get(1));
+            TextChannel tc = this.getTextChannel(data.getString("channel_id"));
             if (tc == null){
                 player.sendMessage("[scarlet]This command is disabled.");
                 return;
@@ -117,8 +99,8 @@ public class discordPlugin extends Plugin{
                     }else if(found.getTeam() != player.getTeam()) {
                         player.sendMessage("[scarlet]Only players on your team can be reported.");
                     } else {
-                        TextChannel tc = this.getTextChannel(data.get(1));
-                        Role r = this.getRole(data.get(2));
+                        TextChannel tc = this.getTextChannel(data.getString("channel_id"));
+                        Role r = this.getRole(data.getString("role_id"));
                         if (tc == null || r == null){
                             player.sendMessage("[scarlet]This command is disabled.");
                             return;
