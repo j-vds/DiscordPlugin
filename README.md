@@ -3,14 +3,12 @@ Make a bot and request a token. Make sure to give the bot some permissions (Admi
 because this plugin is in early dev). 
 
 Before you start your server you will need to create a `settings.json` file in the `config/mods` directory.
-You need to follow a specific template. This is an [example](https://github.com/J-VdS/DiscordPlugin/blob/master/settings.json) of how this file should look.
+You need to follow a specific template. This is an [example](https://github.com/J-VdS/DiscordPlugin/blob/master/settings_template/settings.json) of how this file should look.
 
 I recommend to enable `Developer Mode` on discord. This is the easiest way to get the `id` values.
 
 ### Disable commands
-You are able to disable some in-game commands by leaving some fields in the `settings.json` file blank (`""`).
- * *Disable /d* : `"dchannel_id": ""` 
- * *Disable /gr* : `"role_id": ""`  and `"channel_id":""`
+You can disable some commands by removing or setting some fields equal to `""` in the [`settings.json`](https://github.com/J-VdS/DiscordPlugin/blob/master/settings_template/settings.json) file. I also wrote some templates how to (only) enable certain commands. You can find it [here](https://github.com/J-VdS/DiscordPlugin/tree/master/settings_template).
 
 ### Basic Usage
 You can use some basic commands. I will add more in the future.
@@ -24,7 +22,7 @@ You can use some basic commands. I will add more in the future.
 * `..maps` maps on the server<br>
 (TODO)
 * `..help` shows a help msg
-* `..changemap`
+* `..changemap` (IN PROGRESS)
 
 #### In-game
 * `/d <text...>` Send a message to discord.
