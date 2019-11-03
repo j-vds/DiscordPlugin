@@ -9,8 +9,8 @@ I recommend to enable `Developer Mode` on discord. This is the easiest way to ge
 
 ### Disable commands
 You are able to disable some in-game commands by leaving some fields in the `settings.json` file blank (`""`).
- * *Disable /d* : `"channel_id": ""` 
- * *Disable /gr* : `"role_id": ""`  
+ * *Disable /d* : `"dchannel_id": ""` 
+ * *Disable /gr* : `"role_id": ""`  and `"channel_id":""`
 
 ### Basic Usage
 You can use some basic commands. I will add more in the future.
@@ -19,11 +19,13 @@ You can use some basic commands. I will add more in the future.
 * `..chat <text...>` Send a message to the in-game chat
 * `..players` a list of the online players
 * `..info` gives some info (amount of enemies, number of waves, name of the map)
-* `..infores` amount of resources collected<br>
+* `..infores` amount of resources collected
+* `..gameover` ends a game (adminonly)
+* `..maps` maps on the server<br>
 (TODO)
 * `..help` shows a help msg
-* `..gameover` ends a game (adminonly)
-* `..maps` maps on the server
+* `..changemap`
+
 #### In-game
 * `/d <text...>` Send a message to discord.
 * `/gr [player] [reason...]` Alert admins on discord if someone is griefing (5 minute cooldown)
