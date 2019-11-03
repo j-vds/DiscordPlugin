@@ -19,7 +19,7 @@ You can use some basic commands. I will add more in the future.
 * `..info` gives some info (amount of enemies, number of waves, name of the map)
 * `..infores` amount of resources collected
 * `..gameover` ends a game (adminonly)
-* `..maps` maps on the server<br>
+* `..maps` *custom* maps on the server<br>
 (TODO)
 * `..help` shows a help msg
 * `..changemap` (IN PROGRESS)
