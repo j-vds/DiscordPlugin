@@ -109,6 +109,8 @@ public class discordPlugin extends Plugin{
                     return;
                 }
 
+                if (true) return; //some things broke in arc and or Vars.playergroup
+
                 for (Long key : cooldowns.keySet()) {
                     if (key + CDT < System.currentTimeMillis() / 1000L) {
                         cooldowns.remove(key);
