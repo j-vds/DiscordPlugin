@@ -1,6 +1,7 @@
 package disc;
 
 import io.anuke.arc.Core;
+import io.anuke.arc.util.ArcRuntimeException;
 import io.anuke.arc.util.CommandHandler;
 import io.anuke.arc.util.Strings;
 import io.anuke.mindustry.Vars;
@@ -18,15 +19,24 @@ import org.javacord.api.entity.permission.Role;
 
 //json
 import org.json.JSONObject;
+import org.json.JSONStringer;
 import org.json.JSONTokener;
 
 import java.awt.*;
+import java.io.PrintWriter;
 import java.lang.Thread;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Optional;
 
 public class discordPlugin extends Plugin{
-    final Long CDT = 300L;
+    private final Long CDT = 300L;
+    private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
+    public JSONObject alldata;
     public JSONObject data; //token, channel_id, role_id
     public DiscordApi api;
     private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
@@ -35,12 +45,35 @@ public class discordPlugin extends Plugin{
     public discordPlugin() {
         try {
             String pureJson = Core.settings.getDataDirectory().child("mods/settings.json").readString();
-            data = new JSONObject(new JSONTokener(pureJson));
+            alldata = new JSONObject(new JSONTokener(pureJson));
+            if (!alldata.has("in-game")){
+                System.out.println("[ERR!] discordplugin: settings.json has an invalid format!\n");
+                //this.makeSettingsFile("settings.json");
+                return;
+            } else {
+                data = alldata.getJSONObject("in-game");
+            }
         } catch (Exception e) {
-            System.out.println("[ERR!] discordplugin: " + e.toString());
+            if (e.getMessage().contains(FileNotFoundErrorMessage)){
+                System.out.println("[ERR!] discordplugin: settings.json file is missing.\nBot can't start.");
+                //this.makeSettingsFile("settings.json");
+                return;
+            } else {
+                System.out.println("[ERR!] discordplugin: Init Error");
+                e.printStackTrace();
+                return;
+            }
         }
-        api = new DiscordApiBuilder().setToken(data.getString("token").trim()).login().join();
-        BotThread bt = new BotThread(api, Thread.currentThread());
+        try {
+            api = new DiscordApiBuilder().setToken(alldata.getString("token")).login().join();
+        }catch (Exception e){
+            if (e.getMessage().contains("READY packet")){
+                System.out.println("\n[ERR!] discordplugin: invalid token.\n");
+            } else {
+                e.printStackTrace();
+            }
+        }
+        BotThread bt = new BotThread(api, Thread.currentThread(), alldata.getJSONObject("discord"));
         bt.setDaemon(false);
         bt.start();
     }
@@ -55,16 +88,24 @@ public class discordPlugin extends Plugin{
     @Override
     public void registerClientCommands(CommandHandler handler){
         handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
-            TextChannel tc = this.getTextChannel(data.getString("channel_id"));
-            if (tc == null){
+            if (!data.has("dchannel_id")){
                 player.sendMessage("[scarlet]This command is disabled.");
-                return;
+            } else {
+                TextChannel tc = this.getTextChannel(data.getString("dchannel_id"));
+                if (tc == null) {
+                    player.sendMessage("[scarlet]This command is disabled.");
+                    return;
+                }
+                tc.sendMessage(player.name + ": " + args[0]);
             }
-            tc.sendMessage(player.name +": " + args[0]);
         });
 
         handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player)->{
             //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
+            if (!(data.has("channel_id") && data.has("role_id"))){
+                player.sendMessage("[scarlet]This command is disabled.");
+                return;
+            }
 
             for (Long key: cooldowns.keySet()) {
                 if (key + CDT < System.currentTimeMillis() / 1000L) {
@@ -158,4 +199,38 @@ public class discordPlugin extends Plugin{
         }
         return r1.get();
     }
+    /*
+    private void makeSettingsFile(String _name){
+        JSONObject obj = new JSONObject();
+        obj.put("token", "put your token here");
+
+        JSONObject inGame = new JSONObject();
+        inGame.put("dchannel_id", "");
+        inGame.put("channel_id", "");
+        inGame.put("role_id", "");
+
+        obj.put("in-game", inGame);
+
+        JSONObject discord = new JSONObject();
+        String[] discordFields = {
+                "closeServer_role_id",
+                "gameOver_role_id",
+                "changeMap_role_id",
+                "serverdown_role_id",
+                "serverdown_name"
+        };
+        for (String fname : discordFields){
+            discord.put(fname, "");
+        }
+        obj.put("discord", discord);
+
+        //make file
+        Path path = Paths.get(String.valueOf(Core.settings.getDataDirectory().child("mods/"+_name)));
+        try {
+            PrintWriter writer = new PrintWriter(path.toString(), "UTF-8");
+            writer.println(obj.toString());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }*/
 }

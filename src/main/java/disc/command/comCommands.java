@@ -4,17 +4,15 @@ package disc.command;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.entities.type.Player;
-import io.anuke.mindustry.entities.type.TileEntity;
 import io.anuke.mindustry.gen.Call;
 
 //javacord
-import io.anuke.mindustry.type.Item;
+
 import io.anuke.mindustry.world.modules.ItemModule;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 
-import static io.anuke.mindustry.Vars.player;
 
 public class comCommands implements MessageCreateListener {
     @Override
@@ -24,7 +22,6 @@ public class comCommands implements MessageCreateListener {
             String[] msg = event.getMessageContent().split(" ", 2);
             Call.sendMessage("[sky]" +event.getMessageAuthor().getName()+ " @discord >[] " + msg[1].trim());
         }
-        //gameover
 
         //playerlist
         else if (event.getMessageContent().equalsIgnoreCase("..players")){
