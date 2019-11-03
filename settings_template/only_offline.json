@@ -1,0 +1,11 @@
+{
+  "token" : "your token from discord",
+  "in-game":
+    {
+    },
+  "discord": {
+    "serverdown_channel_id": "id of the channel where the bot needs to post the info/ping message",
+    "serverdown_role_id": "id of the role which needs to know/be pinged if the server is down",
+    "serverdown_name" : "name/url of server (if this is blank the bot won't specify which server is down"
+  }
+}
