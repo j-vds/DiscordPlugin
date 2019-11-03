@@ -39,6 +39,11 @@ public class serverCommands implements MessageCreateListener {
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
         if (event.getMessageContent().equalsIgnoreCase("..gameover")) {
+            if (!data.has("gameOver_role_id")){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
             Role r = getRole(event.getApi(), data.getString("gameOver_role_id"));
 
             if (!hasPermission(r, event)) return;
@@ -51,12 +56,17 @@ public class serverCommands implements MessageCreateListener {
         } else if(event.getMessageContent().equalsIgnoreCase("..maps")){
             StringBuilder mapLijst = new StringBuilder();
             mapLijst.append("List of available maps:\n");
-            for (Map m:Vars.maps.all()){
+            for (Map m:Vars.maps.customMaps()){
                 mapLijst.append("* "+m.name() + "/ " + m.width + " x " + m.height+"\n");
             }
             new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
 
         } else if (event.getMessageContent().startsWith("..changemap")){
+            if (!data.has("changeMap_role_id")){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
             Role r = getRole(event.getApi(), data.getString("changeMap_role_id"));
             if (!hasPermission(r, event)) return;
 
@@ -85,6 +95,11 @@ public class serverCommands implements MessageCreateListener {
             }
 
         } else if (event.getMessageContent().startsWith("..exit")){
+            if (!data.has("closeServer_role_id")){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
             Role r = getRole(event.getApi(), data.getString("closeServer_role_id"));
             if (!hasPermission(r, event)) return;
 

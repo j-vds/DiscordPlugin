@@ -1,0 +1,9 @@
+{
+  "token" : "your token from discord",
+  "in-game":
+    {
+      "dchannel_id" : "change this"
+    },
+  "discord": {
+  }
+}
