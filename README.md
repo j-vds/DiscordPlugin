@@ -8,7 +8,7 @@ You need to follow a specific template. This is an [example](https://github.com/
 I recommend to enable `Developer Mode` on discord. This is the easiest way to get the `id` values.
 
 ### Disable commands
-You can disable some commands by removing or setting some fields equal to `""` in the [`settings.json`](https://github.com/J-VdS/DiscordPlugin/blob/master/settings_template/settings.json) file. I also wrote some templates how to (only) enable certain commands. You can find it [here](https://github.com/J-VdS/DiscordPlugin/tree/master/settings_template).
+You can disable some commands by removing or setting some fields equal to `""` in the [`settings.json`](https://github.com/J-VdS/DiscordPlugin/blob/master/settings_template/settings.json) file. I also wrote some templates how to (only) enable certain commands. You can find it [here](https://github.com/J-VdS/DiscordPlugin/tree/master/settings_template). But remember the name of the file should always be `settings.json`.
 
 ### Basic Usage
 You can use some basic commands. I will add more in the future.
