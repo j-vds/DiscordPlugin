@@ -36,9 +36,9 @@ import java.util.Optional;
 public class discordPlugin extends Plugin{
     private final Long CDT = 300L;
     private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
-    public JSONObject alldata;
-    public JSONObject data; //token, channel_id, role_id
-    public DiscordApi api;
+    private JSONObject alldata;
+    private JSONObject data; //token, channel_id, role_id
+    private DiscordApi api = null;
     private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
 
     //register event handlers and create variables in the constructor
@@ -87,94 +87,97 @@ public class discordPlugin extends Plugin{
     //register commands that player can invoke in-game
     @Override
     public void registerClientCommands(CommandHandler handler){
-        handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
-            if (!data.has("dchannel_id")){
-                player.sendMessage("[scarlet]This command is disabled.");
-            } else {
-                TextChannel tc = this.getTextChannel(data.getString("dchannel_id"));
-                if (tc == null) {
+        if (api != null) {
+            handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
+
+                if (!data.has("dchannel_id")) {
+                    player.sendMessage("[scarlet]This command is disabled.");
+                } else {
+                    TextChannel tc = this.getTextChannel(data.getString("dchannel_id"));
+                    if (tc == null) {
+                        player.sendMessage("[scarlet]This command is disabled.");
+                        return;
+                    }
+                    tc.sendMessage(player.name + ": " + args[0]);
+                }
+            });
+
+            handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
+                //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
+                if (!(data.has("channel_id") && data.has("role_id"))) {
                     player.sendMessage("[scarlet]This command is disabled.");
                     return;
                 }
-                tc.sendMessage(player.name + ": " + args[0]);
-            }
-        });
 
-        handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player)->{
-            //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
-            if (!(data.has("channel_id") && data.has("role_id"))){
-                player.sendMessage("[scarlet]This command is disabled.");
-                return;
-            }
-
-            for (Long key: cooldowns.keySet()) {
-                if (key + CDT < System.currentTimeMillis() / 1000L) {
-                    cooldowns.remove(key);
-                    continue;
-                } else if (player.uuid == cooldowns.get(key)) {
-                    player.sendMessage("[scarlet]This command is on a 5 minute cooldown!");
-                    return;
+                for (Long key : cooldowns.keySet()) {
+                    if (key + CDT < System.currentTimeMillis() / 1000L) {
+                        cooldowns.remove(key);
+                        continue;
+                    } else if (player.uuid == cooldowns.get(key)) {
+                        player.sendMessage("[scarlet]This command is on a 5 minute cooldown!");
+                        return;
+                    }
                 }
-            }
 
-            if (args.length == 0){
-                StringBuilder builder = new StringBuilder();
-                builder.append("[orange]List or reportable players: \n");
-                for(Player p : Vars.playerGroup.all()){
-                    if(p.isAdmin || p.con == null) continue;
+                if (args.length == 0) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("[orange]List or reportable players: \n");
+                    for (Player p : Vars.playerGroup.all()) {
+                        if (p.isAdmin || p.con == null) continue;
 
-                    builder.append("[lightgray] ").append(p.name).append("[accent] (#").append(p.id).append(")\n");
-                }
-                player.sendMessage(builder.toString());
-            } else {
-                Player found;
-                if(args[0].length() > 1 && args[0].startsWith("#") && Strings.canParseInt(args[0].substring(1))){
-                    int id = Strings.parseInt(args[0].substring(1));
-                    found = Vars.playerGroup.find(p -> p.id == id);
-                }else{
-                    found = Vars.playerGroup.find(p -> p.name.equalsIgnoreCase(args[0]));
-                }
-                if(found != null){
-                    if(found.isAdmin){
-                        player.sendMessage("[scarlet]Did you really expect to be able to report an admin?");
-                    }else if(found.getTeam() != player.getTeam()) {
-                        player.sendMessage("[scarlet]Only players on your team can be reported.");
+                        builder.append("[lightgray] ").append(p.name).append("[accent] (#").append(p.id).append(")\n");
+                    }
+                    player.sendMessage(builder.toString());
+                } else {
+                    Player found;
+                    if (args[0].length() > 1 && args[0].startsWith("#") && Strings.canParseInt(args[0].substring(1))) {
+                        int id = Strings.parseInt(args[0].substring(1));
+                        found = Vars.playerGroup.find(p -> p.id == id);
                     } else {
-                        TextChannel tc = this.getTextChannel(data.getString("channel_id"));
-                        Role r = this.getRole(data.getString("role_id"));
-                        if (tc == null || r == null){
-                            player.sendMessage("[scarlet]This command is disabled.");
-                            return;
-                        }
-                        //send message
-                        if (args.length > 1){
-                            new MessageBuilder()
-                                    .append(r)
-                                    .setEmbed(new EmbedBuilder()
-                                            .setTitle("Griefer online")
-                                            .addField("name", found.name)
-                                            .addField("reason", args[1])
-                                            .setColor(Color.ORANGE)
-                                            .setFooter("Reported by " + player.name))
-                                    .send(tc);
+                        found = Vars.playerGroup.find(p -> p.name.equalsIgnoreCase(args[0]));
+                    }
+                    if (found != null) {
+                        if (found.isAdmin) {
+                            player.sendMessage("[scarlet]Did you really expect to be able to report an admin?");
+                        } else if (found.getTeam() != player.getTeam()) {
+                            player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
-                            new MessageBuilder()
-                                    .append(r)
-                                    .setEmbed(new EmbedBuilder()
-                                            .setTitle("Griefer online")
-                                            .addField("name", found.name)
-                                            .setColor(Color.ORANGE)
-                                            .setFooter("Reported by " + player.name))
-                                    .send(tc);
+                            TextChannel tc = this.getTextChannel(data.getString("channel_id"));
+                            Role r = this.getRole(data.getString("role_id"));
+                            if (tc == null || r == null) {
+                                player.sendMessage("[scarlet]This command is disabled.");
+                                return;
+                            }
+                            //send message
+                            if (args.length > 1) {
+                                new MessageBuilder()
+                                        .append(r)
+                                        .setEmbed(new EmbedBuilder()
+                                                .setTitle("Griefer online")
+                                                .addField("name", found.name)
+                                                .addField("reason", args[1])
+                                                .setColor(Color.ORANGE)
+                                                .setFooter("Reported by " + player.name))
+                                        .send(tc);
+                            } else {
+                                new MessageBuilder()
+                                        .append(r)
+                                        .setEmbed(new EmbedBuilder()
+                                                .setTitle("Griefer online")
+                                                .addField("name", found.name)
+                                                .setColor(Color.ORANGE)
+                                                .setFooter("Reported by " + player.name))
+                                        .send(tc);
+                            }
+                            Call.sendMessage(found.name + "[sky] is reported to discord.");
+                            cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid);
                         }
-                        Call.sendMessage(found.name + "[sky] is reported to discord.");
-                        cooldowns.put(System.currentTimeMillis()/1000L, player.uuid);
-                    };
-                }else{
-                    player.sendMessage("[scarlet]No player[orange] '" + args[0] + "'[scarlet] found.");
+                    } else {
+                        player.sendMessage("[scarlet]No player[orange] '" + args[0] + "'[scarlet] found.");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public TextChannel getTextChannel(String id){

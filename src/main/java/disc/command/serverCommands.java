@@ -3,6 +3,7 @@ package disc.command;
 import io.anuke.arc.ApplicationListener;
 import io.anuke.arc.Core;
 import io.anuke.arc.Events;
+import io.anuke.arc.files.FileHandle;
 import io.anuke.arc.net.Server;
 import io.anuke.mindustry.game.EventType.*;
 import io.anuke.mindustry.Vars;
@@ -59,6 +60,7 @@ public class serverCommands implements MessageCreateListener {
             for (Map m:Vars.maps.customMaps()){
                 mapLijst.append("* "+m.name() + "/ " + m.width + " x " + m.height+"\n");
             }
+            mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
             new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
 
         } else if (event.getMessageContent().startsWith("..changemap")){
@@ -107,9 +109,20 @@ public class serverCommands implements MessageCreateListener {
             Core.app.exit();
 
         //testing
-        //} else if (event.getMessageContent().startsWith("..test")){
+        /*} else if (event.getMessageContent().startsWith("..test")){
             //Vars.maps.removeMap(Vars.maps.customMaps().get(0)); //will delete a file
+            FileHandle temp = Core.settings.getDataDirectory().child("maps/temp");
+            temp.mkdirs();
+            for (Map m1 : Vars.maps.customMaps()){
+                if (m1.equals(Vars.world.getMap())) continue;
+                if (m1.name().equals("Snowy Kingdom")) continue;
 
+                m1.file.moveTo(temp);
+            }
+            //reload all maps from that folder
+            Vars.maps.reload();
+
+        */
         }
     }
 
