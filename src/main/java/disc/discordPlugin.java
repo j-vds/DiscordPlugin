@@ -98,7 +98,7 @@ public class discordPlugin extends Plugin{
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
                     }
-                    tc.sendMessage(player.name + ": " + args[0]);
+                    tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
                 }
             });
 
