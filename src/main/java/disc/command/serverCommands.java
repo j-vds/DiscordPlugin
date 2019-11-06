@@ -160,62 +160,10 @@ public class serverCommands implements MessageCreateListener {
             Vars.net.dispose(); //todo: check
             Core.app.exit();
 
+        /*
         //testing
-        /*} else if (event.getMessageContent().startsWith("..test")){
-            //Vars.maps.removeMap(Vars.maps.customMaps().get(0)); //will delete a file
-            String[] splitted = event.getMessageContent().split(" ", 2);
-            if (splitted.length == 1){
-                int index = 1;
-                StringBuilder sb = new StringBuilder();
-                for (Map m: Vars.maps.customMaps()){
-                    sb.append(index++ + " : " + m.name() + "\n");
-                }
-                sb.append("\nUse ..changemap <number/name>");
-                new MessageBuilder().appendCode("", sb.toString()).send(event.getChannel());
-            } else {
-                System.out.println(splitted[1].trim());
-                //try number
-                Map found = null;
-                try{
-                    splitted[1] = splitted[1].trim();
-                    found = Vars.maps.customMaps().get(Integer.parseInt(splitted[1]) - 1);
-                } catch (Exception e) {
-                    //check if map exits
-                    for (Map m : Vars.maps.customMaps()) {
-                        if (m.name().equals(splitted[1])) {
-                            found = m;
-                            break;
-                        }
-                    }
-                }
-                if (found == null){
-                    event.getChannel().sendMessage("Map not found...");
-                    return;
-                };
-
-                FileHandle temp = Core.settings.getDataDirectory().child("maps/temp");
-                temp.mkdirs();
-
-                for (Map m1 : Vars.maps.customMaps()) {
-                    if (m1.equals(Vars.world.getMap())) continue;
-                    if (m1.equals(found)) continue;
-                    m1.file.moveTo(temp);
-                }
-                //reload all maps from that folder
-                Vars.maps.reload();
-                //Call gameover
-                Events.fire(new GameOverEvent(Team.crux));
-                //move maps
-                Vars.maps.reload();
-                FileHandle mapsDir = Core.settings.getDataDirectory().child("maps");
-                for (FileHandle fh : temp.list()) {
-                    fh.moveTo(mapsDir);
-                }
-                temp.deleteDirectory();
-                Vars.maps.reload();
-
-                event.getChannel().sendMessage("Next map selected: " + found.name() + "\nThe current map will change in 10 seconds.");
-            }*/
+        } else if (event.getMessageContent().startsWith("..test")){
+            Call.sendMessage("/help");*/
         }
     }
 

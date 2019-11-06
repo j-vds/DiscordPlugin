@@ -1,11 +1,13 @@
 package disc;
 
 import io.anuke.arc.Core;
+import io.anuke.arc.Events;
 import io.anuke.arc.util.ArcRuntimeException;
 import io.anuke.arc.util.CommandHandler;
 import io.anuke.arc.util.Strings;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.type.Player;
+import io.anuke.mindustry.game.EventType;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.plugin.Plugin;
 //javacord
@@ -76,6 +78,16 @@ public class discordPlugin extends Plugin{
         BotThread bt = new BotThread(api, Thread.currentThread(), alldata.getJSONObject("discord"));
         bt.setDaemon(false);
         bt.start();
+
+        //live chat
+        if (data.has("live_chat_channel_id")) {
+            TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
+            if (tc != null) {
+                Events.on(EventType.PlayerChatEvent.class, event -> {
+                    tc.sendMessage(event.player.name + " *@mindustry* : " + event.message);
+                });
+            }
+        }
     }
 
     //register commands that run on the server
@@ -99,7 +111,9 @@ public class discordPlugin extends Plugin{
                         return;
                     }
                     tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
+                    Call.sendMessage(player.name + "[sky] to @discord[]: " + args[0]);
                 }
+
             });
 
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
@@ -109,7 +123,7 @@ public class discordPlugin extends Plugin{
                     return;
                 }
 
-                if (true) return; //some things broke in arc and or Vars.playergroup
+                //if (true) return; //some things broke in arc and or Vars.playergroup
 
                 for (Long key : cooldowns.keySet()) {
                     if (key + CDT < System.currentTimeMillis() / 1000L) {
@@ -131,12 +145,24 @@ public class discordPlugin extends Plugin{
                     }
                     player.sendMessage(builder.toString());
                 } else {
-                    Player found;
+                    Player found = null;
                     if (args[0].length() > 1 && args[0].startsWith("#") && Strings.canParseInt(args[0].substring(1))) {
                         int id = Strings.parseInt(args[0].substring(1));
-                        found = Vars.playerGroup.find(p -> p.id == id);
+                        //found = Vars.playerGroup.find(p -> p.id == id);
+                        for (Player p: Vars.playerGroup.all()){
+                            if (p.id == id){
+                                found = p;
+                                break;
+                            }
+                        }
                     } else {
-                        found = Vars.playerGroup.find(p -> p.name.equalsIgnoreCase(args[0]));
+                        for (Player p: Vars.playerGroup.all()){
+                            if (p.name.equalsIgnoreCase(args[0])){
+                                found = p;
+                                break;
+                            }
+                        }
+                        //found = Vars.playerGroup.find(p -> p.name.equalsIgnoreCase(args[0]));
                     }
                     if (found != null) {
                         if (found.isAdmin) {
@@ -153,9 +179,9 @@ public class discordPlugin extends Plugin{
                             //send message
                             if (args.length > 1) {
                                 new MessageBuilder()
-                                        .append(r)
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Griefer online")
+                                                .setDescription(r.getMentionTag())
                                                 .addField("name", found.name)
                                                 .addField("reason", args[1])
                                                 .setColor(Color.ORANGE)
@@ -163,9 +189,9 @@ public class discordPlugin extends Plugin{
                                         .send(tc);
                             } else {
                                 new MessageBuilder()
-                                        .append(r)
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Griefer online")
+                                                .setDescription(r.getMentionTag())
                                                 .addField("name", found.name)
                                                 .setColor(Color.ORANGE)
                                                 .setFooter("Reported by " + player.name))

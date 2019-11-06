@@ -4,7 +4,8 @@
     {
       "dchannel_id" : "id of the channel where /d messages will be posted",
       "channel_id": "id of the channel where /gr messages will be posted",
-      "role_id": "id of the admin role"
+      "role_id": "id of the admin role",
+      "live_chat_channel_id" : "id of the channel where all (in-game) messages will be posted"
     },
   "discord": {
     "closeServer_role_id": "id of the role which has the permission to close the server",
