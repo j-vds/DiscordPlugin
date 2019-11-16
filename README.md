@@ -18,11 +18,12 @@ You can use some basic commands. I will add more in the future.
 * `..players` a list of the online players
 * `..info` gives some info (amount of enemies, number of waves, name of the map)
 * `..infores` amount of resources collected
-* `..gameover` ends a game (adminonly)
-* `..maps` *custom* maps on the server<br>
+* `..gameover` ends a game 
+* `..maps` *custom* maps on the server
+* `..changemap`<br>
 (TODO)
 * `..help` shows a help msg
-* `..changemap` (IN PROGRESS)
+
 
 #### In-game
 * `/d <text...>` Send a message to discord.
