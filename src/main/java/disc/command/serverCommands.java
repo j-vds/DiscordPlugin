@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.zip.InflaterInputStream;
 
 
 public class serverCommands implements MessageCreateListener {
@@ -193,19 +194,23 @@ public class serverCommands implements MessageCreateListener {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage("You need to add 1 valid .msav file!");
                 return;
+            } else if(Core.settings.getDataDirectory().child("maps").child(ml.get(0).getFileName()).exists()){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage("There is already a map with this name on the server!");
+                return;
             }
+            //more custom filename checks possible
 
             CompletableFuture<byte[]> cf = ml.get(0).downloadAsByteArray();
             FileHandle fh = Core.settings.getDataDirectory().child("maps").child(ml.get(0).getFileName());
 
             try {
                 byte[] data = cf.get();
-                if (!SaveIO.isSaveValid(new DataInputStream(new ByteArrayInputStream(data)))){
+                if (!SaveIO.isSaveValid(new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(data))))) {
                     if (event.isPrivateMessage()) return;
                     event.getChannel().sendMessage("invalid .msav file!");
                     return;
                 }
-                System.out.println("loading file!");
                 fh.writeBytes(cf.get(), false);
             } catch (Exception e){
                 e.printStackTrace();
