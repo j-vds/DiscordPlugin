@@ -3,6 +3,7 @@ package disc.command;
 import io.anuke.arc.ApplicationListener;
 import io.anuke.arc.Core;
 import io.anuke.arc.Events;
+import io.anuke.arc.collection.Array;
 import io.anuke.arc.files.FileHandle;
 import io.anuke.arc.net.Server;
 import io.anuke.mindustry.game.EventType.*;
@@ -11,19 +12,23 @@ import io.anuke.mindustry.core.GameState;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.maps.Map;
+import io.anuke.mindustry.io.*;
 
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.MessageAttachment;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.util.List;
 import java.util.Optional;
-//change maps
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
+
 
 public class serverCommands implements MessageCreateListener {
     final long minMapChangeTime = 30L; //30 seconds
@@ -31,6 +36,7 @@ public class serverCommands implements MessageCreateListener {
     final String noPermission = "You don't have permissions to use this command!";
 
     private JSONObject data;
+    private long lastMapChange = 0L;
 
 
     public serverCommands(JSONObject _data){
@@ -52,9 +58,9 @@ public class serverCommands implements MessageCreateListener {
             if (Vars.state.is(GameState.State.menu)) {
                 return;
             }
-            //inExtraRound = false;
             Events.fire(new GameOverEvent(Team.crux));
         } else if(event.getMessageContent().equalsIgnoreCase("..maps")){
+            Vars.maps.reload();
             StringBuilder mapLijst = new StringBuilder();
             mapLijst.append("List of available maps:\n");
             for (Map m:Vars.maps.customMaps()){
@@ -71,6 +77,12 @@ public class serverCommands implements MessageCreateListener {
             }
             Role r = getRole(event.getApi(), data.getString("changeMap_role_id"));
             if (!hasPermission(r, event)) return;
+
+            if (System.currentTimeMillis() / 1000L - this.lastMapChange < this.minMapChangeTime){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(String.format("This commands has a %d s cooldown.", this.minMapChangeTime));
+                return;
+            }
 
             //Vars.maps.removeMap(Vars.maps.customMaps().get(0)); //will delete a file
             String[] splitted = event.getMessageContent().split(" ", 2);
@@ -124,6 +136,8 @@ public class serverCommands implements MessageCreateListener {
                 Vars.maps.reload();
 
                 event.getChannel().sendMessage("Next map selected: " + found.name() + "\nThe current map will change in 10 seconds.");
+
+                this.lastMapChange = System.currentTimeMillis() / 1000L;
             }
 
             /*
@@ -148,8 +162,8 @@ public class serverCommands implements MessageCreateListener {
                 }
             }*/
 
-        } else if (event.getMessageContent().startsWith("..exit")){
-            if (!data.has("closeServer_role_id")){
+        } else if (event.getMessageContent().startsWith("..exit")) {
+            if (!data.has("closeServer_role_id")) {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
@@ -160,11 +174,52 @@ public class serverCommands implements MessageCreateListener {
             Vars.net.dispose(); //todo: check
             Core.app.exit();
 
-        /*
+        } else if (event.getMessageContent().equals("..uploadmap")) {
+            if (!data.has("uploadmap_role_id")) {
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
+            Role r = getRole(event.getApi(), data.getString("uploadmap_role_id"));
+            if (!hasPermission(r, event)) return;
+
+            Array<MessageAttachment> ml = new Array<MessageAttachment>();
+            for (MessageAttachment ma : event.getMessageAttachments()){
+                if (ma.getFileName().split("\\.", 2)[1].trim().equals("msav")){
+                    ml.add(ma);
+                }
+            }
+            if (ml.size != 1){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage("You need to add 1 valid .msav file!");
+                return;
+            }
+
+            CompletableFuture<byte[]> cf = ml.get(0).downloadAsByteArray();
+            FileHandle fh = Core.settings.getDataDirectory().child("maps").child(ml.get(0).getFileName());
+
+            try {
+                byte[] data = cf.get();
+                if (!SaveIO.isSaveValid(new DataInputStream(new ByteArrayInputStream(data)))){
+                    if (event.isPrivateMessage()) return;
+                    event.getChannel().sendMessage("invalid .msav file!");
+                    return;
+                }
+                System.out.println("loading file!");
+                fh.writeBytes(cf.get(), false);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            Vars.maps.reload();
+            event.getChannel().sendMessage(ml.get(0).getFileName() + " added succesfully!");
         //testing
-        } else if (event.getMessageContent().startsWith("..test")){
-            Call.sendMessage("/help");*/
+        //} else if (event.getMessageContent().startsWith("..test")){
+
         }
+    }
+
+    public void testhallo(byte[] a){
+        System.out.println("done");
     }
 
     public Role getRole(DiscordApi api, String id){
