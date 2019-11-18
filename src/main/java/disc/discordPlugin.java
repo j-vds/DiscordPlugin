@@ -84,7 +84,7 @@ public class discordPlugin extends Plugin{
             TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
             if (tc != null) {
                 Events.on(EventType.PlayerChatEvent.class, event -> {
-                    tc.sendMessage(event.player.name + " *@mindustry* : " + event.message);
+                    tc.sendMessage("**" + event.player.name.replace('*', '+') + "**: " + event.message);
                 });
             }
         }

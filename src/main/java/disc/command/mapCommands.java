@@ -143,12 +143,12 @@ public class mapCommands implements MessageCreateListener {
             }*/
 
         } else if (event.getMessageContent().equals("..uploadmap")) {
-            if (!data.has("uploadmap_role_id")) {
+            if (!data.has("mapConfig_role_id")) {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
             }
-            Role r = getRole(event.getApi(), data.getString("uploadmap_role_id"));
+            Role r = getRole(event.getApi(), data.getString("mapConfig_role_id"));
             if (!hasPermission(r, event)) return;
 
             Array<MessageAttachment> ml = new Array<MessageAttachment>();
@@ -184,6 +184,51 @@ public class mapCommands implements MessageCreateListener {
             }
             Vars.maps.reload();
             event.getChannel().sendMessage(ml.get(0).getFileName() + " added succesfully!");
+
+        } else if (event.getMessageContent().startsWith("..removemap")) {
+            if (!data.has("mapConfig_role_id")) {
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
+            Role r = getRole(event.getApi(), data.getString("mapConfig_role_id"));
+            if (!hasPermission(r, event)) return;
+
+            //Vars.maps.removeMap(Vars.maps.customMaps().get(0)); //will delete a file
+            String[] splitted = event.getMessageContent().split(" ", 2);
+            if (splitted.length == 1) {
+                int index = 1;
+                StringBuilder sb = new StringBuilder();
+                for (Map m : Vars.maps.customMaps()) {
+                    sb.append(index++ + " : " + m.name() + "\n");
+                }
+                sb.append("\nUse ..removemap <number/name>");
+                new MessageBuilder().appendCode("", sb.toString()).send(event.getChannel());
+            } else {
+                //try number
+                Map found = null;
+                try {
+                    splitted[1] = splitted[1].trim();
+                    found = Vars.maps.customMaps().get(Integer.parseInt(splitted[1]) - 1);
+                } catch (Exception e) {
+                    //check if map exits
+                    for (Map m : Vars.maps.customMaps()) {
+                        if (m.name().equals(splitted[1])) {
+                            found = m;
+                            break;
+                        }
+                    }
+                }
+                if (found == null) {
+                    event.getChannel().sendMessage("Map not found...");
+                    return;
+                }
+                Vars.maps.removeMap(found);
+                Vars.maps.reload();
+
+                event.getChannel().sendMessage("Deleted succesfully: " + found.name());
+
+            }
         }
     }
 
