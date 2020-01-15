@@ -5,11 +5,11 @@ import io.anuke.arc.Events;
 import io.anuke.arc.util.ArcRuntimeException;
 import io.anuke.arc.util.CommandHandler;
 import io.anuke.arc.util.Strings;
-import io.anuke.mindustry.Vars;
-import io.anuke.mindustry.entities.type.Player;
-import io.anuke.mindustry.game.EventType;
-import io.anuke.mindustry.gen.Call;
-import io.anuke.mindustry.plugin.Plugin;
+import mindustry.Vars;
+import mindustry.entities.type.Player;
+import mindustry.game.EventType;
+import mindustry.gen.Call;
+import mindustry.plugin.Plugin;
 //javacord
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
