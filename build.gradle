@@ -12,19 +12,29 @@ repositories{
 
 ext{
     //the build number that this plugin is made for
-    mindustryVersion = 'v97'
+    mindustryVersion = 'v104'
+    //equals to null
+    arcVersion = 'v104'
+
+    isHash = {
+        return arcHash != null
+    }
 }
 
 dependencies{
 
-    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
+
+    compileOnly "com.github.Anuken.Arc:arc-core:$arcVersion"
+
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:server:$mindustryVersion"
+
 
     compile group: 'org.json', name: 'json', version: '20190722'
     //javacord
     implementation 'org.javacord:javacord:3.0.4'
 }
+
+
 
 jar{
     version = null
