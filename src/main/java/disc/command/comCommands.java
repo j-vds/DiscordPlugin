@@ -1,14 +1,14 @@
 package disc.command;
 
 //mindustry + arc
-import io.anuke.mindustry.Vars;
-import io.anuke.mindustry.content.Items;
-import io.anuke.mindustry.entities.type.Player;
-import io.anuke.mindustry.gen.Call;
+import mindustry.Vars;
+import mindustry.content.Items;
+import mindustry.entities.type.Player;
+import mindustry.gen.Call;
 
 //javacord
 
-import io.anuke.mindustry.world.modules.ItemModule;
+import mindustry.world.modules.ItemModule;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
