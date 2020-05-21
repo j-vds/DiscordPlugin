@@ -1,7 +1,7 @@
 package disc;
 
 import disc.command.comCommands;
-//import disc.command.mapCommands;
+import disc.command.mapCommands;
 import disc.command.serverCommands;
 import org.javacord.api.DiscordApi;
 
@@ -26,7 +26,7 @@ public class BotThread extends Thread{
         api.addMessageCreateListener(new comCommands());
         //server manangement commands
         api.addMessageCreateListener(new serverCommands(data));
-        //api.addMessageCreateListener(new mapCommands(data));
+        api.addMessageCreateListener(new mapCommands(data));
     }
 
     public void run(){

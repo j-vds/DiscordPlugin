@@ -1,35 +1,22 @@
 package disc.command;
 
-import io.anuke.arc.ApplicationListener;
-import io.anuke.arc.Core;
-import io.anuke.arc.Events;
-import io.anuke.arc.collection.Array;
-import io.anuke.arc.files.FileHandle;
-import io.anuke.arc.net.Server;
-import io.anuke.mindustry.game.EventType.*;
-import io.anuke.mindustry.Vars;
-import io.anuke.mindustry.core.GameState;
-import io.anuke.mindustry.game.Team;
-import io.anuke.mindustry.gen.Call;
-import io.anuke.mindustry.maps.Map;
-import io.anuke.mindustry.io.*;
+
+import arc.Core;
+import arc.Events;
+import mindustry.game.EventType.*;
+import mindustry.Vars;
+import mindustry.core.GameState;
+import mindustry.game.Team;
+
 
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.message.MessageAttachment;
-import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.zip.InflaterInputStream;
 
+import java.util.Optional;
 
 public class serverCommands implements MessageCreateListener {
     final String commandDisabled = "This command is disabled.";

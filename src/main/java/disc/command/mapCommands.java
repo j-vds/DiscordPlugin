@@ -1,59 +1,57 @@
-//package disc.command;
-//
-//import io.anuke.arc.Core;
-//import io.anuke.arc.Events;
-//import io.anuke.arc.collection.Array;
-//import io.anuke.arc.files.FileHandle;
-//import io.anuke.mindustry.Vars;
-//import io.anuke.mindustry.game.EventType;
-//import io.anuke.mindustry.game.Team;
-//import io.anuke.mindustry.io.SaveIO;
-//import io.anuke.mindustry.maps.Map;
-//import org.javacord.api.DiscordApi;
-//import org.javacord.api.entity.message.MessageAttachment;
-//import org.javacord.api.entity.message.MessageBuilder;
-//import org.javacord.api.entity.permission.Role;
-//import org.javacord.api.event.message.MessageCreateEvent;
-//import org.javacord.api.listener.message.MessageCreateListener;
-//import org.json.JSONObject;
-//
-//import java.io.ByteArrayInputStream;
-//import java.io.DataInputStream;
-//import java.util.Optional;
-//import java.util.concurrent.CompletableFuture;
-//import java.util.zip.InflaterInputStream;
-//
-//public class mapCommands implements MessageCreateListener {
-//    final long minMapChangeTime = 30L; //30 seconds
-//    final String commandDisabled = "This command is disabled.";
-//    final String noPermission = "You don't have permissions to use this command!";
-//
-//    private JSONObject data;
-//    private long lastMapChange = 0L;
-//
-//
-//    public mapCommands(JSONObject _data) {
-//        this.data = _data;
-//    }
-//
-//    @Override
-//    public void onMessageCreate(MessageCreateEvent event) {
-//        if (event.getMessageContent().equalsIgnoreCase("..maps")) {
-//            Vars.maps.reload();
-//            StringBuilder mapLijst = new StringBuilder();
-//            mapLijst.append("List of available maps:\n");
-//            for (Map m : Vars.maps.customMaps()) {
-//                mapLijst.append("* " + m.name() + "/ " + m.width + " x " + m.height + "\n");
-//            }
-//            mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
-//            new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
-//
-//        } else if (event.getMessageContent().startsWith("..changemap")) {
-//            if (!data.has("changeMap_role_id")) {
-//                if (event.isPrivateMessage()) return;
-//                event.getChannel().sendMessage(commandDisabled);
-//                return;
-//            }
+package disc.command;
+
+import mindustry.Vars;
+import mindustry.game.EventType;
+import mindustry.game.Team;
+import mindustry.io.SaveIO;
+import mindustry.maps.Map;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.MessageAttachment;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.permission.Role;
+import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.listener.message.MessageCreateListener;
+import org.json.JSONObject;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.zip.InflaterInputStream;
+
+public class mapCommands implements MessageCreateListener {
+    final long minMapChangeTime = 30L; //30 seconds
+    final String commandDisabled = "This command is disabled.";
+    final String noPermission = "You don't have permissions to use this command!";
+
+    private JSONObject data;
+    private long lastMapChange = 0L;
+
+
+    public mapCommands(JSONObject _data) {
+        this.data = _data;
+    }
+
+    @Override
+    public void onMessageCreate(MessageCreateEvent event) {
+        if (event.getMessageContent().equalsIgnoreCase("..maps")) {
+            Vars.maps.reload();
+            StringBuilder mapLijst = new StringBuilder();
+            mapLijst.append("List of available maps:\n");
+            for (Map m : Vars.maps.customMaps()) {
+                mapLijst.append("* " + m.name() + "/ " + m.width + " x " + m.height + "\n");
+            }
+            mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
+            new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
+
+        } else if (event.getMessageContent().startsWith("..changemap")) {
+            if (!data.has("changeMap_role_id")) {
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
+            event.getChannel().sendMessage("Still working on updating -- disabled for now");
+
 //            Role r = getRole(event.getApi(), data.getString("changeMap_role_id"));
 //            if (!hasPermission(r, event)) return;
 //
@@ -141,13 +139,16 @@
 //
 //                }
 //            }*/
-//
-//        } else if (event.getMessageContent().equals("..uploadmap")) {
-//            if (!data.has("mapConfig_role_id")) {
-//                if (event.isPrivateMessage()) return;
-//                event.getChannel().sendMessage(commandDisabled);
-//                return;
-//            }
+
+        } else if (event.getMessageContent().equals("..uploadmap")) {
+            if (!data.has("mapConfig_role_id")) {
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
+
+            event.getChannel().sendMessage("Still working on updating -- disabled for now");
+
 //            Role r = getRole(event.getApi(), data.getString("mapConfig_role_id"));
 //            if (!hasPermission(r, event)) return;
 //
@@ -184,13 +185,16 @@
 //            }
 //            Vars.maps.reload();
 //            event.getChannel().sendMessage(ml.get(0).getFileName() + " added succesfully!");
-//
-//        } else if (event.getMessageContent().startsWith("..removemap")) {
-//            if (!data.has("mapConfig_role_id")) {
-//                if (event.isPrivateMessage()) return;
-//                event.getChannel().sendMessage(commandDisabled);
-//                return;
-//            }
+
+        } else if (event.getMessageContent().startsWith("..removemap")) {
+            if (!data.has("mapConfig_role_id")) {
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
+
+            event.getChannel().sendMessage("Still working on updating -- disabled for now");
+
 //            Role r = getRole(event.getApi(), data.getString("mapConfig_role_id"));
 //            if (!hasPermission(r, event)) return;
 //
@@ -227,36 +231,36 @@
 //                Vars.maps.reload();
 //
 //                event.getChannel().sendMessage("Deleted succesfully: " + found.name());
-//
+
 //            }
-//        }
-//    }
-//
-//    public Role getRole(DiscordApi api, String id){
-//        Optional<Role> r1 = api.getRoleById(id);
-//        if (!r1.isPresent()) {
-//            System.out.println("[ERR!] discordplugin: role not found!");
-//            return null;
-//        }
-//        return r1.get();
-//    }
-//
-//    public Boolean hasPermission(Role r, MessageCreateEvent event){
-//        try {
-//            if (r == null) {
-//                if (event.isPrivateMessage()) return false;
-//                event.getChannel().sendMessage(commandDisabled);
-//                return false;
-//            } else if (!event.getMessageAuthor().asUser().get().getRoles(event.getServer().get()).contains(r)) {
-//                if (event.isPrivateMessage()) return false;
-//                event.getChannel().sendMessage(noPermission);
-//                return false;
-//            } else {
-//                return true;
-//            }
-//        } catch (Exception _){
-//            return false;
-//        }
-//    }
-//}
-//
+        }
+    }
+
+    public Role getRole(DiscordApi api, String id){
+        Optional<Role> r1 = api.getRoleById(id);
+        if (!r1.isPresent()) {
+            System.out.println("[ERR!] discordplugin: role not found!");
+            return null;
+        }
+        return r1.get();
+    }
+
+    public Boolean hasPermission(Role r, MessageCreateEvent event){
+        try {
+            if (r == null) {
+                if (event.isPrivateMessage()) return false;
+                event.getChannel().sendMessage(commandDisabled);
+                return false;
+            } else if (!event.getMessageAuthor().asUser().get().getRoles(event.getServer().get()).contains(r)) {
+                if (event.isPrivateMessage()) return false;
+                event.getChannel().sendMessage(noPermission);
+                return false;
+            } else {
+                return true;
+            }
+        } catch (Exception _){
+            return false;
+        }
+    }
+}
+
