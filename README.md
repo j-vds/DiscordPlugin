@@ -1,3 +1,5 @@
+*DEPRECATED*
+
 ### Setup
 Make a bot and request a token. Make sure to give the bot some permissions (Admin for now, this will change 
 because this plugin is in early dev). 
