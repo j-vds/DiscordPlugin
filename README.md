@@ -1,4 +1,4 @@
-*DEPRECATED*
+*DEPRECATED ~ working on an 126.2 update*
 
 ### Setup
 Make a bot and request a token. Make sure to give the bot some permissions (Admin for now, this will change 
