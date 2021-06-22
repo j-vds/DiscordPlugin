@@ -1,46 +1,30 @@
 apply plugin: "java"
-apply plugin: "maven"
 
-version '0.1'
+version '1.0'
 
 sourceCompatibility = 1.8
 
 repositories{
     mavenCentral()
-    maven{ url 'https://jitpack.io' }
+    maven{ url 'https://www.jitpack.io' }
 }
 
 ext{
     //the build number that this plugin is made for
-    mindustryVersion = 'v104'
-    //equals to null
-    arcVersion = 'v104'
-
-    isHash = {
-        return arcHash != null
-    }
+    mindustryVersion = 'v126.2'
 }
 
 dependencies{
-
-
-    compileOnly "com.github.Anuken.Arc:arc-core:$arcVersion"
-
+    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+    implementation group: 'org.json', name: 'json', version: '20210307'
 
-
-    compile group: 'org.json', name: 'json', version: '20190722'
-    //javacord
     implementation 'org.javacord:javacord:3.0.4'
 }
 
-
-
 jar{
-    version = null
+    version=null
     from{
         configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
     }
 }
-
-compileJava.options.encoding = 'UTF-8'

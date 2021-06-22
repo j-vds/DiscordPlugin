@@ -1,18 +1,17 @@
 package disc;
 
-
-//javacord
 import arc.Core;
 import arc.Events;
 
 import arc.util.CommandHandler;
 import arc.util.Strings;
 import mindustry.Vars;
-import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.gen.Call;
 
-import mindustry.plugin.Plugin;
+import mindustry.gen.Groups;
+import mindustry.gen.Player;
+import mindustry.mod.Plugin;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.Channel;
@@ -119,13 +118,12 @@ public class discordPlugin extends Plugin {
                     return;
                 }
 
-                //if (true) return; //some things broke in arc and or Vars.playergroup
 
                 for (Long key : cooldowns.keySet()) {
                     if (key + CDT < System.currentTimeMillis() / 1000L) {
                         cooldowns.remove(key);
                         continue;
-                    } else if (player.uuid == cooldowns.get(key)) {
+                    } else if (player.uuid() == cooldowns.get(key)) {
                         player.sendMessage("[scarlet]This command is on a 5 minute cooldown!");
                         return;
                     }
@@ -134,8 +132,8 @@ public class discordPlugin extends Plugin {
                 if (args.length == 0) {
                     StringBuilder builder = new StringBuilder();
                     builder.append("[orange]List or reportable players: \n");
-                    for (Player p : Vars.playerGroup.all()) {
-                        if (p.isAdmin || p.con == null) continue;
+                    for (Player p : Groups.player) {
+                        if (p.admin() || p.con == null) continue;
 
                         builder.append("[lightgray] ").append(p.name).append("[accent] (#").append(p.id).append(")\n");
                     }
@@ -144,26 +142,24 @@ public class discordPlugin extends Plugin {
                     Player found = null;
                     if (args[0].length() > 1 && args[0].startsWith("#") && Strings.canParseInt(args[0].substring(1))) {
                         int id = Strings.parseInt(args[0].substring(1));
-                        //found = Vars.playerGroup.find(p -> p.id == id);
-                        for (Player p: Vars.playerGroup.all()){
+                        for (Player p: Groups.player){
                             if (p.id == id){
                                 found = p;
                                 break;
                             }
                         }
                     } else {
-                        for (Player p: Vars.playerGroup.all()){
+                        for (Player p: Groups.player){
                             if (p.name.equalsIgnoreCase(args[0])){
                                 found = p;
                                 break;
                             }
                         }
-                        //found = Vars.playerGroup.find(p -> p.name.equalsIgnoreCase(args[0]));
                     }
                     if (found != null) {
-                        if (found.isAdmin) {
+                        if (found.admin()) {
                             player.sendMessage("[scarlet]Did you really expect to be able to report an admin?");
-                        } else if (found.getTeam() != player.getTeam()) {
+                        } else if (found.team() != player.team()) {
                             player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
                             TextChannel tc = this.getTextChannel(data.getString("channel_id"));
@@ -194,7 +190,7 @@ public class discordPlugin extends Plugin {
                                         .send(tc);
                             }
                             Call.sendMessage(found.name + "[sky] is reported to discord.");
-                            cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid);
+                            cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid());
                         }
                     } else {
                         player.sendMessage("[scarlet]No player[orange] '" + args[0] + "'[scarlet] found.");
