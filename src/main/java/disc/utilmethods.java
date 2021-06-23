@@ -8,7 +8,7 @@ import org.javacord.api.entity.permission.Role;
 import java.util.Optional;
 
 public class utilmethods {
-    public TextChannel getTextChannel(DiscordApi api, String id){
+    public static TextChannel getTextChannel(DiscordApi api, String id){
         Optional<Channel> dc =  ((Optional<Channel>)api.getChannelById(id));
         if (!dc.isPresent()) {
             System.out.println("[ERR!] discordplugin: channel not found!");
@@ -22,10 +22,10 @@ public class utilmethods {
         return dtc.get();
     }
 
-    public Role getRole(DiscordApi api, String id){
+    public static Role getRole(DiscordApi api, String id){
         Optional<Role> r1 = api.getRoleById(id);
         if (!r1.isPresent()) {
-            System.out.println("[ERR!] discordplugin: adminrole not found!");
+            System.out.println("[ERR!] discordplugin: role not found!");
             return null;
         }
         return r1.get();

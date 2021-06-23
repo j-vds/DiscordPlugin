@@ -3,9 +3,11 @@ package disc;
 import arc.Core;
 import arc.Events;
 
+import arc.files.Fi;
+import arc.struct.ObjectMap;
 import arc.util.CommandHandler;
+import arc.util.Log;
 import arc.util.Strings;
-import mindustry.Vars;
 import mindustry.game.EventType;
 import mindustry.gen.Call;
 
@@ -24,11 +26,16 @@ import org.javacord.api.entity.permission.Role;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.awt.*;
 
+import java.awt.*;
 import java.lang.Thread;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Optional;
+
+import static disc.discConstants.*;
+import static disc.utilmethods.*;
 
 public class discordPlugin extends Plugin {
     private final Long CDT = 300L;
@@ -38,8 +45,45 @@ public class discordPlugin extends Plugin {
     private DiscordApi api = null;
     private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
 
+
+    private boolean invalidConfig = false;
+    private ObjectMap<String, Role> discRoles = new ObjectMap<>();
+    private ObjectMap<String, TextChannel> discChannels = new ObjectMap<>();
+
+    //private JSONObject config;
+    private String totalPath;
+    private String servername;
+
+
     //register event handlers and create variables in the constructor
     public discordPlugin() {
+        //getting the config file:
+        Fi path = Core.settings.getDataDirectory().child(diPath);
+        totalPath = path.child(fileName).absolutePath();
+
+        JSONObject config = null;
+
+        if(path.exists()){
+            Log.info("<disc> PATH EXISTS");
+            String pureJSON = path.child(totalPath).readString();
+            config = new JSONObject(new JSONTokener(pureJSON));
+            if(!config.has("version")){
+                makeSettingsFile();
+            }else if(config.getInt("version") < VERSION){
+                Log.info("<disc> configfile: VERSION");
+                makeSettingsFile();
+            }
+        }else{
+            makeSettingsFile();
+        }
+
+        if(config == null || invalidConfig) return;
+
+        readSettingsFile(config);
+
+
+
+
         try {
             String pureJson = Core.settings.getDataDirectory().child("mods/settings.json").readString();
             alldata = new JSONObject(new JSONTokener(pureJson));
@@ -76,7 +120,7 @@ public class discordPlugin extends Plugin {
 
         //live chat
         if (data.has("live_chat_channel_id")) {
-            TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
+            TextChannel tc = getTextChannel(api, data.getString("live_chat_channel_id"));
             if (tc != null) {
                 Events.on(EventType.PlayerChatEvent.class, event -> {
                     tc.sendMessage("**" + event.player.name.replace('*', '+') + "**: " + event.message);
@@ -100,7 +144,7 @@ public class discordPlugin extends Plugin {
                 if (!data.has("dchannel_id")) {
                     player.sendMessage("[scarlet]This command is disabled.");
                 } else {
-                    TextChannel tc = this.getTextChannel(data.getString("dchannel_id"));
+                    TextChannel tc = getTextChannel(api, data.getString("dchannel_id"));
                     if (tc == null) {
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
@@ -162,8 +206,8 @@ public class discordPlugin extends Plugin {
                         } else if (found.team() != player.team()) {
                             player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
-                            TextChannel tc = this.getTextChannel(data.getString("channel_id"));
-                            Role r = this.getRole(data.getString("role_id"));
+                            TextChannel tc = getTextChannel(api, data.getString("channel_id"));
+                            Role r = getRole(api, data.getString("role_id"));
                             if (tc == null || r == null) {
                                 player.sendMessage("[scarlet]This command is disabled.");
                                 return;
@@ -200,60 +244,89 @@ public class discordPlugin extends Plugin {
         }
     }
 
-    public TextChannel getTextChannel(String id){
-        Optional<Channel> dc =  ((Optional<Channel>)this.api.getChannelById(id));
-        if (!dc.isPresent()) {
-            System.out.println("[ERR!] discordplugin: channel not found!");
-            return null;
+    private void readSettingsFile(JSONObject obj){
+        if(obj.has("token")){
+            try {
+                api = new DiscordApiBuilder().setToken(obj.getString("token")).login().join();
+                Log.info("<disc> Valid token");
+            }catch (Exception e){
+                if (e.getMessage().contains("READY packet")){
+                    Log.info("<disc> invalid token");
+                } else {
+                    e.printStackTrace();
+                }
+                invalidConfig = true;
+                return;
+            }
+        }else{
+            invalidConfig = true;
+            return;
         }
-        Optional<TextChannel> dtc = dc.get().asTextChannel();
-        if (!dtc.isPresent()){
-            System.out.println("[ERR!] discordplugin: textchannel not found!");
-            return null;
+
+        if(obj.has("channel_ids")){
+            JSONObject temp = obj.getJSONObject("channel_ids");
+            for(String field : temp.keySet()){
+                discChannels.put(field, getTextChannel(api, obj.getString(field)));
+            }
         }
-        return dtc.get();
+
+        if(obj.has("role_ids")){
+            JSONObject temp = obj.getJSONObject("role_ids");
+            for(String field : temp.keySet()){
+                discRoles.put(field, getRole(api, obj.getString(field)));
+            }
+        }
+
+        if(obj.has("servername")){
+            servername = obj.getString("servername");
+        }else{
+            servername = null;
+        }
+
+        Log.info("<disc> config loaded");
     }
 
-    public Role getRole(String id){
-        Optional<Role> r1 = this.api.getRoleById(id);
-        if (!r1.isPresent()) {
-            System.out.println("[ERR!] discordplugin: adminrole not found!");
-            return null;
+
+    private void makeSettingsFile(){
+        Log.info("<disc> CREATING JSON FILE");
+        Fi directory = Core.settings.getDataDirectory().child(diPath);
+        if(!directory.isDirectory()){
+            directory.mkdirs();
         }
-        return r1.get();
-    }
-    /*
-    private void makeSettingsFile(String _name){
-        JSONObject obj = new JSONObject();
-        obj.put("token", "put your token here");
 
-        JSONObject inGame = new JSONObject();
-        inGame.put("dchannel_id", "");
-        inGame.put("channel_id", "");
-        inGame.put("role_id", "");
+        JSONObject config = new JSONObject();
+        config.put("info", "more info available on: https://github.com/J-VdS/DiscordPlugin");
+        config.put("version", VERSION);
 
-        obj.put("in-game", inGame);
+        config.put("servername", "name of your server - can be empty");
 
-        JSONObject discord = new JSONObject();
-        String[] discordFields = {
+        config.put("token", "put your token here");
+
+        JSONObject channels = new JSONObject();
+        channels.put("dchannel_id", "messages using /d will be send to this channel - can be empty");
+        channels.put("channel_id", "id of the channel where /gr reports will appear - can be empty");
+        channels.put("live_chat_channel_id", "id of the channel where live chat will appear - can be empty");
+
+        config.put("channel_ids", channels);
+
+        JSONObject roles = new JSONObject();
+        String[] discordRoles = {
                 "closeServer_role_id",
                 "gameOver_role_id",
                 "changeMap_role_id",
-                "serverdown_role_id",
-                "serverdown_name"
+                "serverDown_role_id"
         };
-        for (String fname : discordFields){
-            discord.put(fname, "");
+        for (String field : discordRoles){
+            roles.put(field, "");
         }
-        obj.put("discord", discord);
 
-        //make file
-        Path path = Paths.get(String.valueOf(Core.settings.getDataDirectory().child("mods/"+_name)));
-        try {
-            PrintWriter writer = new PrintWriter(path.toString(), "UTF-8");
-            writer.println(obj.toString());
-        } catch (Exception e){
-            e.printStackTrace();
+        config.put("role_ids", roles);
+
+        Log.info("<disc> Creating config.json");
+        try{
+            Files.write(Paths.get(totalPath), config.toString().getBytes());
+        }catch (Exception e){
+            Log.info("<disc> Failed to create config.json");
         }
-    }*/
+    }
 }
