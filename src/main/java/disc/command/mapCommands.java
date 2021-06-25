@@ -1,35 +1,29 @@
 package disc.command;
 
+import disc.discordPlugin;
+
 import mindustry.Vars;
-import mindustry.game.EventType;
-import mindustry.game.Team;
-import mindustry.io.SaveIO;
+
 import mindustry.maps.Map;
-import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.message.MessageAttachment;
+
 import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.json.JSONObject;
+import org.javacord.api.entity.permission.Role;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.zip.InflaterInputStream;
+
+import static disc.utilmethods.*;
+
 
 public class mapCommands implements MessageCreateListener {
     final long minMapChangeTime = 30L; //30 seconds
-    final String commandDisabled = "This command is disabled.";
-    final String noPermission = "You don't have permissions to use this command!";
 
-    private JSONObject data;
+    private discordPlugin mainData;
     private long lastMapChange = 0L;
 
 
-    public mapCommands(JSONObject _data) {
-        this.data = _data;
+    public mapCommands(discordPlugin _mainData) {
+        this.mainData = _mainData;
     }
 
     @Override
@@ -45,7 +39,8 @@ public class mapCommands implements MessageCreateListener {
             new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
 
         } else if (event.getMessageContent().startsWith("..changemap")) {
-            if (!data.has("changeMap_role_id")) {
+            Role mapRole = mainData.discRoles.get("changeMap_role_id");
+            if (mapRole == null) {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
@@ -141,7 +136,8 @@ public class mapCommands implements MessageCreateListener {
 //            }*/
 
         } else if (event.getMessageContent().equals("..uploadmap")) {
-            if (!data.has("mapConfig_role_id")) {
+            Role mapConfigRole = mainData.discRoles.get("mapConfig_role_id");
+            if (mapConfigRole == null) {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
@@ -187,7 +183,8 @@ public class mapCommands implements MessageCreateListener {
 //            event.getChannel().sendMessage(ml.get(0).getFileName() + " added succesfully!");
 
         } else if (event.getMessageContent().startsWith("..removemap")) {
-            if (!data.has("mapConfig_role_id")) {
+            Role mapConfigRole = mainData.discRoles.get("mapConfig_role_id");
+            if (mapConfigRole == null) {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
@@ -233,33 +230,6 @@ public class mapCommands implements MessageCreateListener {
 //                event.getChannel().sendMessage("Deleted succesfully: " + found.name());
 
 //            }
-        }
-    }
-
-    public Role getRole(DiscordApi api, String id){
-        Optional<Role> r1 = api.getRoleById(id);
-        if (!r1.isPresent()) {
-            System.out.println("[ERR!] discordplugin: role not found!");
-            return null;
-        }
-        return r1.get();
-    }
-
-    public Boolean hasPermission(Role r, MessageCreateEvent event){
-        try {
-            if (r == null) {
-                if (event.isPrivateMessage()) return false;
-                event.getChannel().sendMessage(commandDisabled);
-                return false;
-            } else if (!event.getMessageAuthor().asUser().get().getRoles(event.getServer().get()).contains(r)) {
-                if (event.isPrivateMessage()) return false;
-                event.getChannel().sendMessage(noPermission);
-                return false;
-            } else {
-                return true;
-            }
-        } catch (Exception _){
-            return false;
         }
     }
 }

@@ -16,7 +16,6 @@ import mindustry.gen.Player;
 import mindustry.mod.Plugin;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -32,7 +31,6 @@ import java.lang.Thread;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Optional;
 
 import static disc.discConstants.*;
 import static disc.utilmethods.*;
@@ -47,12 +45,12 @@ public class discordPlugin extends Plugin {
 
 
     private boolean invalidConfig = false;
-    private ObjectMap<String, Role> discRoles = new ObjectMap<>();
-    private ObjectMap<String, TextChannel> discChannels = new ObjectMap<>();
+    public ObjectMap<String, Role> discRoles = new ObjectMap<>();
+    public ObjectMap<String, TextChannel> discChannels = new ObjectMap<>();
 
     //private JSONObject config;
     private String totalPath;
-    private String servername;
+    public String servername;
 
 
     //register event handlers and create variables in the constructor
@@ -81,40 +79,7 @@ public class discordPlugin extends Plugin {
 
         readSettingsFile(config);
 
-
-
-
-        try {
-            String pureJson = Core.settings.getDataDirectory().child("mods/settings.json").readString();
-            alldata = new JSONObject(new JSONTokener(pureJson));
-            if (!alldata.has("in-game")){
-                System.out.println("[ERR!] discordplugin: settings.json has an invalid format!\n");
-                //this.makeSettingsFile("settings.json");
-                return;
-            } else {
-                data = alldata.getJSONObject("in-game");
-            }
-        } catch (Exception e) {
-            if (e.getMessage().contains(FileNotFoundErrorMessage)){
-                System.out.println("[ERR!] discordplugin: settings.json file is missing.\nBot can't start.");
-                //this.makeSettingsFile("settings.json");
-                return;
-            } else {
-                System.out.println("[ERR!] discordplugin: Init Error");
-                e.printStackTrace();
-                return;
-            }
-        }
-        try {
-            api = new DiscordApiBuilder().setToken(alldata.getString("token")).login().join();
-        }catch (Exception e){
-            if (e.getMessage().contains("READY packet")){
-                System.out.println("\n[ERR!] discordplugin: invalid token.\n");
-            } else {
-                e.printStackTrace();
-            }
-        }
-        BotThread bt = new BotThread(api, Thread.currentThread(), alldata.getJSONObject("discord"));
+        BotThread bt = new BotThread(this, Thread.currentThread());
         bt.setDaemon(false);
         bt.start();
 
@@ -244,6 +209,12 @@ public class discordPlugin extends Plugin {
         }
     }
 
+    //getters
+    public DiscordApi getAPI(){
+        return this.api;
+    }
+
+
     private void readSettingsFile(JSONObject obj){
         if(obj.has("token")){
             try {
@@ -280,7 +251,7 @@ public class discordPlugin extends Plugin {
         if(obj.has("servername")){
             servername = obj.getString("servername");
         }else{
-            servername = null;
+            servername = "";
         }
 
         Log.info("<disc> config loaded");

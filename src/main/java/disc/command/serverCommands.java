@@ -8,38 +8,34 @@ import mindustry.Vars;
 import mindustry.core.GameState;
 import mindustry.game.Team;
 
-
-import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.json.JSONObject;
 
+import disc.discordPlugin;
 
-import java.util.Optional;
 
 public class serverCommands implements MessageCreateListener {
     final String commandDisabled = "This command is disabled.";
     final String noPermission = "You don't have permissions to use this command!";
 
-    private JSONObject data;
+    private discordPlugin mainData;
 
 
-    public serverCommands(JSONObject _data){
-        this.data = _data;
+    public serverCommands(discordPlugin _data){
+        this.mainData = _data;
     }
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
         if (event.getMessageContent().equalsIgnoreCase("..gameover")) {
-            if (!data.has("gameOver_role_id")){
+            Role gameOverRole = mainData.discRoles.get("gameOver_role_id");
+            if (gameOverRole == null){
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
             }
-            Role r = getRole(event.getApi(), data.getString("gameOver_role_id"));
-
-            if (!hasPermission(r, event)) return;
+            if (!hasPermission(gameOverRole, event)) return;
             // ------------ has permission --------------
             if (Vars.state.is(GameState.State.menu)) {
                 return;
@@ -47,13 +43,13 @@ public class serverCommands implements MessageCreateListener {
             Events.fire(new GameOverEvent(Team.crux));
 
         } else if (event.getMessageContent().startsWith("..exit")) {
-            if (!data.has("closeServer_role_id")) {
+            Role closeServerRole = mainData.discRoles.get("closeServer_role_id");
+            if (closeServerRole == null) {
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
                 return;
             }
-            Role r = getRole(event.getApi(), data.getString("closeServer_role_id"));
-            if (!hasPermission(r, event)) return;
+            if (!hasPermission(closeServerRole, event)) return;
 
             Vars.net.dispose(); //todo: check
             Core.app.exit();
@@ -68,14 +64,6 @@ public class serverCommands implements MessageCreateListener {
         System.out.println("done");
     }
 
-    public Role getRole(DiscordApi api, String id){
-        Optional<Role> r1 = api.getRoleById(id);
-        if (!r1.isPresent()) {
-            System.out.println("[ERR!] discordplugin: role not found!");
-            return null;
-        }
-        return r1.get();
-    }
 
     public Boolean hasPermission(Role r, MessageCreateEvent event){
         try {
@@ -94,6 +82,4 @@ public class serverCommands implements MessageCreateListener {
             return false;
         }
     }
-
-
 }

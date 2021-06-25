@@ -1,8 +1,10 @@
 package disc;
 
+import arc.struct.ObjectMap;
 import disc.command.comCommands;
 import disc.command.mapCommands;
 import disc.command.serverCommands;
+import jdk.internal.jline.internal.Log;
 import org.javacord.api.DiscordApi;
 
 import org.javacord.api.entity.channel.TextChannel;
@@ -15,47 +17,44 @@ import java.lang.Thread;
 public class BotThread extends Thread{
     public DiscordApi api;
     private Thread mt;
-    private JSONObject data;
+    private discordPlugin mainData;
 
-    public BotThread(DiscordApi _api, Thread _mt, JSONObject _data) {
-        api = _api; //new DiscordApiBuilder().setToken(data.get(0)).login().join();
+    public BotThread(discordPlugin _mainData, Thread _mt) {
+        api = _mainData.getAPI(); //new DiscordApiBuilder().setToken(data.get(0)).login().join();
         mt = _mt;
-        data = _data;
+        mainData = _mainData;
 
         //communication commands
         api.addMessageCreateListener(new comCommands());
         //server manangement commands
-        api.addMessageCreateListener(new serverCommands(data));
-        api.addMessageCreateListener(new mapCommands(data));
+        api.addMessageCreateListener(new serverCommands(mainData));
+        api.addMessageCreateListener(new mapCommands(mainData));
     }
 
     public void run(){
-        while (this.mt.isAlive()){
-            try{
+        while (this.mt.isAlive()) {
+            try {
                 Thread.sleep(1000);
             } catch (Exception e) {
 
             }
         }
-        if (data.has("serverdown_role_id")){
-            Role r = new utilmethods().getRole(api, data.getString("serverdown_role_id"));
-            TextChannel tc = new utilmethods().getTextChannel(api, data.getString("serverdown_channel_id"));
-            if (r == null || tc ==  null) {
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception _) {}
-            } else {
-                if (data.has("serverdown_name")){
-                    String serverNaam = data.getString("serverdown_name");
+        Role downRole = mainData.discRoles.get("serverdown_role_id");
+        TextChannel downChannel = mainData.discChannels.get("serverdown_channel_id");
+        if (downRole != null && downChannel != null){
+                if (!mainData.servername.isEmpty()){
                     new MessageBuilder()
-                            .append(String.format("%s\nServer %s is down",r.getMentionTag(),((serverNaam != "") ? ("**"+serverNaam+"**") : "")))
-                            .send(tc);
+                            .append(String.format("%s\nServer %s is down",downRole.getMentionTag(), "**"+mainData.servername+"**"))
+                            .send(downChannel);
                 } else {
                     new MessageBuilder()
-                            .append(String.format("%s\nServer is down.", r.getMentionTag()))
-                            .send(tc);
+                            .append(String.format("%s\nServer is down.", downRole.getMentionTag()))
+                            .send(downChannel);
                 }
-            }
+        }else{
+            try {
+                Thread.sleep(1000);
+            } catch (Exception _) {}
         }
         api.disconnect();
     }
