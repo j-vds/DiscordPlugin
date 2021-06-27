@@ -4,7 +4,6 @@ import arc.struct.ObjectMap;
 import disc.command.comCommands;
 import disc.command.mapCommands;
 import disc.command.serverCommands;
-import jdk.internal.jline.internal.Log;
 import org.javacord.api.DiscordApi;
 
 import org.javacord.api.entity.channel.TextChannel;
@@ -54,7 +53,7 @@ public class BotThread extends Thread{
         }else{
             try {
                 Thread.sleep(1000);
-            } catch (Exception _) {}
+            } catch (Exception ignore) {}
         }
         api.disconnect();
     }

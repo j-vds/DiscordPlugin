@@ -48,7 +48,7 @@ public class utilmethods {
             } else {
                 return true;
             }
-        } catch (Exception _){
+        } catch (Exception ignore){
             return false;
         }
     }
