@@ -9,7 +9,6 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.permission.Role;
-import org.json.JSONObject;
 
 import java.lang.Thread;
 

@@ -35,9 +35,6 @@ import static disc.utilmethods.*;
 
 public class discordPlugin extends Plugin {
     private final long CDT = 300L;
-    private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
-    private JSONObject alldata;
-    private JSONObject data; //token, channel_id, role_id
     private DiscordApi api = null;
     private ObjectMap<Long, String> cooldowns = new ObjectMap<>(); //uuid
 
@@ -60,14 +57,14 @@ public class discordPlugin extends Plugin {
         JSONObject config = null;
 
         if(path.exists()){
-            Log.info("<disc> PATH EXISTS");
+            discLog("PATH EXISTS");
             String pureJSON = Fi.get(totalPath).readString();
 
             config = new JSONObject(new JSONTokener(pureJSON));
             if(!config.has("version")){
                 makeSettingsFile();
             }else if(config.getInt("version") < VERSION){
-                Log.info("<disc> configfile: VERSION");
+                discLog("configfile: VERSION");
                 makeSettingsFile();
             }
         }else{
@@ -79,7 +76,7 @@ public class discordPlugin extends Plugin {
         readSettingsFile(config);
 
         BotThread bt = new BotThread(this, Thread.currentThread());
-        bt.setDaemon(false);
+        bt.setDaemon(true); //false
         bt.start();
 
         //live chat
@@ -100,24 +97,21 @@ public class discordPlugin extends Plugin {
 
     //register commands that player can invoke in-game
     @Override
-    public void registerClientCommands(CommandHandler handler){
-        if (api != null) {
+    public void registerClientCommands(CommandHandler handler) {
+        if (api != null) return;
+
+        TextChannel tc = discChannels.get("dchannel_id", (TextChannel) null);
+        if (tc != null) {
+            discLog("dchannel enabled");
             handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
-
-                if (!data.has("dchannel_id")) {
-                    player.sendMessage("[scarlet]This command is disabled.");
-                } else {
-                    TextChannel tc = getTextChannel(api, data.getString("dchannel_id"));
-                    if (tc == null) {
-                        player.sendMessage("[scarlet]This command is disabled.");
-                        return;
-                    }
-                    tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
-                    Call.sendMessage(player.name + "[sky] to @discord[]: " + args[0]);
-                }
-
+                tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
+                Call.sendMessage(player.name + "[sky] to @discord[]: " + args[0]);
             });
+        }
 
+        tc = discChannels.get("channel_id", (TextChannel) null);
+        Role ro = discRoles.get("role_id", (Role) null);
+        if (tc != null && ro != null) {
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
                 //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
                 if (!(data.has("channel_id") && data.has("role_id"))) {
@@ -149,15 +143,15 @@ public class discordPlugin extends Plugin {
                     Player found = null;
                     if (args[0].length() > 1 && args[0].startsWith("#") && Strings.canParseInt(args[0].substring(1))) {
                         int id = Strings.parseInt(args[0].substring(1));
-                        for (Player p: Groups.player){
-                            if (p.id == id){
+                        for (Player p : Groups.player) {
+                            if (p.id == id) {
                                 found = p;
                                 break;
                             }
                         }
                     } else {
-                        for (Player p: Groups.player){
-                            if (p.name.equalsIgnoreCase(args[0])){
+                        for (Player p : Groups.player) {
+                            if (p.name.equalsIgnoreCase(args[0])) {
                                 found = p;
                                 break;
                             }
@@ -217,10 +211,10 @@ public class discordPlugin extends Plugin {
         if(obj.has("token")){
             try {
                 api = new DiscordApiBuilder().setToken(obj.getString("token")).login().join();
-                Log.info("<disc> Valid token");
+                discLog("Valid token");
             }catch (Exception e){
                 if (e.getMessage().contains("READY packet")){
-                    Log.info("<disc> invalid token");
+                    discLog("invalid token");
                 } else {
                     e.printStackTrace();
                 }
@@ -252,12 +246,12 @@ public class discordPlugin extends Plugin {
             servername = "";
         }
 
-        Log.info("<disc> config loaded");
+        discLog("config loaded");
     }
 
 
     private void makeSettingsFile(){
-        Log.info("<disc> CREATING JSON FILE");
+        discLog("CREATING JSON FILE");
         Fi directory = Core.settings.getDataDirectory().child(diPath);
         if(!directory.isDirectory()){
             directory.mkdirs();
@@ -291,11 +285,11 @@ public class discordPlugin extends Plugin {
 
         config.put("role_ids", roles);
 
-        Log.info("<disc> Creating config.json");
+        discLog("Creating config.json");
         try{
             Files.write(Paths.get(totalPath), config.toString().getBytes());
         }catch (Exception e){
-            Log.info("<disc> Failed to create config.json");
+            discLog("Failed to create config.json");
         }
     }
 }

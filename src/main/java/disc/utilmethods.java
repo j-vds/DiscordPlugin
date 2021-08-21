@@ -6,6 +6,8 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
 
+import arc.util.Log;
+
 import java.util.Optional;
 
 public class utilmethods {
@@ -51,6 +53,14 @@ public class utilmethods {
         } catch (Exception ignore){
             return false;
         }
+    }
+
+    public static void discLog(Object o){
+        Log.info("<disc> ",o);
+    }
+
+    public static void discLog(Object ...objects){
+        Log.info("<disc> ", objects);
     }
 
 }
