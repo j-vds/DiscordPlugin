@@ -26,22 +26,20 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 
-import java.awt.*;
-import java.lang.Thread;
+import java.awt.Color;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 import static disc.discConstants.*;
 import static disc.utilmethods.*;
 
 public class discordPlugin extends Plugin {
-    private final Long CDT = 300L;
+    private final long CDT = 300L;
     private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
     private JSONObject alldata;
     private JSONObject data; //token, channel_id, role_id
     private DiscordApi api = null;
-    private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
+    private ObjectMap<Long, String> cooldowns = new ObjectMap<>(); //uuid
 
 
     private boolean invalidConfig = false;
@@ -63,7 +61,8 @@ public class discordPlugin extends Plugin {
 
         if(path.exists()){
             Log.info("<disc> PATH EXISTS");
-            String pureJSON = path.child(totalPath).readString();
+            String pureJSON = Fi.get(totalPath).readString();
+
             config = new JSONObject(new JSONTokener(pureJSON));
             if(!config.has("version")){
                 makeSettingsFile();
@@ -84,14 +83,13 @@ public class discordPlugin extends Plugin {
         bt.start();
 
         //live chat
-        if (data.has("live_chat_channel_id")) {
-            TextChannel tc = getTextChannel(api, data.getString("live_chat_channel_id"));
-            if (tc != null) {
-                Events.on(EventType.PlayerChatEvent.class, event -> {
-                    tc.sendMessage("**" + event.player.name.replace('*', '+') + "**: " + event.message);
-                });
-            }
+        TextChannel tc = discChannels.get("live_chat_channel_id", (TextChannel) null);
+        if (tc != null) {
+            Events.on(EventType.PlayerChatEvent.class, event -> {
+                tc.sendMessage("**" + event.player.name.replace('*', '+') + "**: " + event.message);
+            });
         }
+
     }
 
     //register commands that run on the server
@@ -128,7 +126,7 @@ public class discordPlugin extends Plugin {
                 }
 
 
-                for (Long key : cooldowns.keySet()) {
+                for (Long key : cooldowns.keys()) {
                     if (key + CDT < System.currentTimeMillis() / 1000L) {
                         cooldowns.remove(key);
                         continue;
@@ -237,14 +235,14 @@ public class discordPlugin extends Plugin {
         if(obj.has("channel_ids")){
             JSONObject temp = obj.getJSONObject("channel_ids");
             for(String field : temp.keySet()){
-                discChannels.put(field, getTextChannel(api, obj.getString(field)));
+                discChannels.put(field, getTextChannel(api, temp.getString(field)));
             }
         }
 
         if(obj.has("role_ids")){
             JSONObject temp = obj.getJSONObject("role_ids");
             for(String field : temp.keySet()){
-                discRoles.put(field, getRole(api, obj.getString(field)));
+                discRoles.put(field, getRole(api, temp.getString(field)));
             }
         }
 

@@ -11,7 +11,7 @@ repositories{
 
 ext{
     //the build number that this plugin is made for
-    mindustryVersion = 'v126.2'
+    mindustryVersion = 'v130'
 }
 
 dependencies{
@@ -19,12 +19,16 @@ dependencies{
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
     implementation group: 'org.json', name: 'json', version: '20210307'
 
-    implementation 'org.javacord:javacord:3.0.4'
+    implementation 'org.javacord:javacord:3.3.2'
 }
 
 jar{
-    version=null
+    version = null
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+	duplicatesStrategy=DuplicatesStrategy.EXCLUDE
+	
     from{
         configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
     }
+
 }
