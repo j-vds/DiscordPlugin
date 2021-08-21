@@ -6,7 +6,6 @@ import arc.Events;
 import arc.files.Fi;
 import arc.struct.ObjectMap;
 import arc.util.CommandHandler;
-import arc.util.Log;
 import arc.util.Strings;
 import mindustry.game.EventType;
 import mindustry.gen.Call;
@@ -80,13 +79,12 @@ public class discordPlugin extends Plugin {
         bt.start();
 
         //live chat
-        TextChannel tc = discChannels.get("live_chat_channel_id", (TextChannel) null);
+        TextChannel tc = discChannels.get("live_chat_channel_id");
         if (tc != null) {
             Events.on(EventType.PlayerChatEvent.class, event -> {
                 tc.sendMessage("**" + event.player.name.replace('*', '+') + "**: " + event.message);
             });
         }
-
     }
 
     //register commands that run on the server
@@ -100,25 +98,21 @@ public class discordPlugin extends Plugin {
     public void registerClientCommands(CommandHandler handler) {
         if (api != null) return;
 
-        TextChannel tc = discChannels.get("dchannel_id", (TextChannel) null);
-        if (tc != null) {
-            discLog("dchannel enabled");
+        TextChannel tc_d = discChannels.get("dchannel_id");
+        if (tc_d != null) {
+            discLog("- Command '/d' enabled");
             handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
-                tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
+                tc_d.sendMessage(player.name + " *@mindustry* : " + args[0]);
                 Call.sendMessage(player.name + "[sky] to @discord[]: " + args[0]);
             });
         }
 
-        tc = discChannels.get("channel_id", (TextChannel) null);
+        TextChannel tc_c = discChannels.get("channel_id");
         Role ro = discRoles.get("role_id", (Role) null);
-        if (tc != null && ro != null) {
+        if (tc_c != null && ro != null) {
+            discLog("- Command '/gr' enabled");
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
                 //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
-                if (!(data.has("channel_id") && data.has("role_id"))) {
-                    player.sendMessage("[scarlet]This command is disabled.");
-                    return;
-                }
-
 
                 for (Long key : cooldowns.keys()) {
                     if (key + CDT < System.currentTimeMillis() / 1000L) {
@@ -163,32 +157,26 @@ public class discordPlugin extends Plugin {
                         } else if (found.team() != player.team()) {
                             player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
-                            TextChannel tc = getTextChannel(api, data.getString("channel_id"));
-                            Role r = getRole(api, data.getString("role_id"));
-                            if (tc == null || r == null) {
-                                player.sendMessage("[scarlet]This command is disabled.");
-                                return;
-                            }
                             //send message
                             if (args.length > 1) {
                                 new MessageBuilder()
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Potential griefer online")
-                                                .setDescription(r.getMentionTag())
+                                                .setDescription(ro.getMentionTag())
                                                 .addField("name", found.name)
                                                 .addField("reason", args[1])
                                                 .setColor(Color.ORANGE)
                                                 .setFooter("Reported by " + player.name))
-                                        .send(tc);
+                                        .send(tc_c);
                             } else {
                                 new MessageBuilder()
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Potential griefer online")
-                                                .setDescription(r.getMentionTag())
+                                                .setDescription(ro.getMentionTag())
                                                 .addField("name", found.name)
                                                 .setColor(Color.ORANGE)
                                                 .setFooter("Reported by " + player.name))
-                                        .send(tc);
+                                        .send(tc_c);
                             }
                             Call.sendMessage(found.name + "[sky] is reported to discord.");
                             cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid());

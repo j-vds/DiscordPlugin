@@ -1,6 +1,5 @@
 package disc;
 
-import arc.struct.ObjectMap;
 import disc.command.comCommands;
 import disc.command.mapCommands;
 import disc.command.serverCommands;
@@ -37,8 +36,10 @@ public class BotThread extends Thread{
 
             }
         }
+
         Role downRole = mainData.discRoles.get("serverdown_role_id");
         TextChannel downChannel = mainData.discChannels.get("serverdown_channel_id");
+
         if (downRole != null && downChannel != null){
                 if (!mainData.servername.isEmpty()){
                     new MessageBuilder()

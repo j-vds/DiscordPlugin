@@ -56,7 +56,7 @@ public class utilmethods {
     }
 
     public static void discLog(Object o){
-        Log.info("<disc> ",o);
+        Log.info("<disc> @", o);
     }
 
     public static void discLog(Object ...objects){
